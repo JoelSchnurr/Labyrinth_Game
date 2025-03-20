@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: Labyrinth Game API
+  description: API-Spezifikation für ein Labyrinth-Spiel, bei dem der Spieler sich bewegen kann.
+  version: 1.1.0
+
+paths:
+  /game/start:
+    post:
+      summary: Starte ein neues Spiel
+      operationId: startGame
+      responses:
+        '200':
+          description: Spiel erfolgreich gestartet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameState'
+
+  /game/move:
+    post:
+      summary: Bewege den Spieler in eine Richtung
+      operationId: movePlayer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveRequest'
+      responses:
+        '200':
+          description: Neuer Zustand nach der Bewegung
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameState'
+        '400':
+          description: Ungültige Bewegung oder Regelverstoß (z.B. Wand oder Spielfeldrand)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /game/status:
+    get:
+      summary: Status des aktuellen Spiels abrufen
+      operationId: getGameStatus
+      responses:
+        '200':
+          description: Der aktuelle Spielstatus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameState'
+
+components:
+  schemas:
+    GameState:
+      type: object
+      properties:
+        position:
+          type: string
+          example: "A1"
+        grid:
+          type: array
+          description: 5x5 Spielfeld mit blockierten Wänden
+          items:
+            type: array
+            items:
+              type: string
+          example: 
+            - ["A1", "A2", "A3", "A4", "A5"]
+            - ["B1", "X", "B3", "X", "B5"]
+            - ["C1", "C2", "C3", "C4", "C5"]
+            - ["D1", "D2", "X", "D4", "D5"]
+            - ["E1", "E2", "E3", "E4", "E5"]
+        status:
+          type: string
+          enum: [ongoing, success, failed]
+        message:
+          type: string
+          example: "Du hast dich erfolgreich bewegt."
+
+    MoveRequest:
+      type: object
+      properties:
+        direction:
+          type: string
+          enum: [left, right, up, down]
+          example: "right"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Ungültige Bewegung - Blockierte Wand oder Spielfeldrand erreicht!"
